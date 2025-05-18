@@ -50,7 +50,7 @@ class PizzaOrderActivities:
             error_message = f"Invalid charge amount: {charge_amount}"
             activity.logger.error(error_message)
 
-            # TODO Part A: Study this
+            # DONE Part A: Study this
             raise ApplicationError(
                 error_message,
                 type="InvalidChargeAmountError",
@@ -80,7 +80,13 @@ class PizzaOrderActivities:
                 billingTimestamp=int(time()),
             )
         else:
-            # TODO Part A: Raise an error here to fail the Activity
+            # DONE Part A: Raise an error here to fail the Activity
             # if the credit card "processing" fails. This failure should fail the
             # Activity and NOT retry. Pass in a valid error message, set the error
             # type to "CreditCardProcessingError" and the flag to set it as non-retryable
+            error_message = f"Invalid card number: {charge_info.credit_card.number}"
+            raise ApplicationError(
+                error_message,
+                type="CreditCardProcessingError",
+                non_retryable=True
+            )

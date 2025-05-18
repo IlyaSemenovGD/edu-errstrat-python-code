@@ -56,11 +56,15 @@ class PizzaOrderWorkflow:
         # has failed, and then throw another ApplicationError, passing
         # in a message and the type as "CreditCradProcessingError"
 
-        credit_card_confirmation = await workflow.execute_activity_method(
-            PizzaOrderActivities.process_credit_card,
-            credit_card_charge,
-            start_to_close_timeout=timedelta(seconds=5),
-        )
+        try:
+            credit_card_confirmation = await workflow.execute_activity_method(
+                PizzaOrderActivities.process_credit_card,
+                credit_card_charge,
+                start_to_close_timeout=timedelta(seconds=5),
+            )
+        except ActivityError as e:
+            workflow.logger.error("Unable to process credit card")
+            raise ApplicationError(f"Unable to process credit card {e.message}")
 
         try:
             confirmation = await workflow.execute_activity_method(
