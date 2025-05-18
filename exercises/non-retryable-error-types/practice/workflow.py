@@ -16,13 +16,14 @@ class PizzaOrderWorkflow:
     @workflow.run
     async def order_pizza(self, order: PizzaOrder) -> OrderConfirmation:
 
-        # TODO Part B: Set the type "CreditCardProcessingError" as a non-retryable error type
+        # DONE Part B: Set the type "CreditCardProcessingError" as a non-retryable error type
         # using the `non_retryable_error_types`` keyword argument. This argument takes a list.
         retry_policy = RetryPolicy(
             initial_interval=timedelta(seconds=15),
             backoff_coefficient=2.0,
             maximum_interval=timedelta(seconds=160),
             maximum_attempts=100,
+            non_retryable_error_types=["CreditCardProcessingError"],
         )
 
         workflow.logger.info(f"Workflow order_pizza invoked")
@@ -62,12 +63,14 @@ class PizzaOrderWorkflow:
             credit_card_charge = CreditCardCharge(
                 bill=bill, credit_card=order.credit_card_info
             )
-            # TODO Part B: Add the retry_policy to the execute_activity_method using the `retry_policy` keyword argument
+            # DONE Part B: Add the retry_policy to the execute_activity_method using the `retry_policy` keyword argument
             # TODO Part D: Add the heartbeat_timeout to the execute_activity_method using the `heartbeat_timeout` keyword argument
             credit_card_confirmation = await workflow.execute_activity_method(
                 PizzaOrderActivities.process_credit_card,
                 credit_card_charge,
                 start_to_close_timeout=timedelta(seconds=5),
+                retry_policy=retry_policy,
+                heartbeat_timeout=timedelta(seconds=10),
             )
         except ActivityError as e:
             workflow.logger.error(f"Unable to process credit card {e.message}")
@@ -85,15 +88,14 @@ class PizzaOrderWorkflow:
             workflow.logger.error(f"Unable to bill customer {e.message}")
             raise ApplicationError("Unable to bill customer")
 
-        # TODO PART C: Uncomment the code to run the Activity
-        """
+        # DONE PART C: Uncomment the code to run the Activity
+
         delivery_driver_available = await workflow.execute_activity_method(
             PizzaOrderActivities.notify_delivery_driver,
             confirmation,
             start_to_close_timeout=timedelta(minutes=5),
             heartbeat_timeout=timedelta(seconds=10),
         )
-        """
 
         if delivery_driver_available is not True:
             # Notify customer delivery is not available and they will have to come

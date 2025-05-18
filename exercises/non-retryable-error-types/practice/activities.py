@@ -81,11 +81,11 @@ class PizzaOrderActivities:
                 billingTimestamp=int(time()),
             )
         else:
-            # TODO PART A: Refactor this code to be retryable
+            # DONE PART A: Refactor this code to be retryable
             raise ApplicationError(
                 "Invalid credit card number",
                 type="CreditCardProcessingError",
-                non_retryable=True,
+#                non_retryable=True,
             )
 
     @activity.defn
@@ -108,12 +108,13 @@ class PizzaOrderActivities:
                 activity.logger.info("Delivery driver responded")
                 return True
 
-            # TODO Part C: Add a heartbeat here. Provide the current iteration of
+            # DONE Part C: Add a heartbeat here. Provide the current iteration of
             # the loop as the details.
+            activity.heartbeat(f"Heartbeat: {x}")
 
             activity.logger.info(f"Heartbeat: {x}")
 
-            await asyncio.sleep(5)
+            await asyncio.sleep(15)
 
         activity.logger.info("Delivery driver didn't respond")
         return False
